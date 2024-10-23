@@ -41,7 +41,12 @@ def fetch_category_links():
         category_url = link['href']  # Get the category URL
 
         # Skip links related to live broadcasts or video content
-        if 'live' in category_url.lower() or 'video' in category_name.lower():
+        if (
+                'live' in category_url.lower()
+                or 'video' in category_name.lower()
+                or 'home' in category_name.lower()
+                or 'news' in category_name.lower()
+        ):
             continue  # Skip live and video categories
 
         # Complete relative URLs by adding the base URL
@@ -80,4 +85,3 @@ def fetch_article_links(category_url):
             articles.append(article_url)
 
     return articles
-
