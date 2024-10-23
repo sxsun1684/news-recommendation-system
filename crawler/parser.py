@@ -35,7 +35,7 @@ def fetch_articles_threads():
 
     # Optionally return or process the collected results (all_results) further
 
-def parse_article(article_url):
+def parse_article(article_url,category):
     try:
         # fetch_articles_threads()
         response = requests.get(article_url)
@@ -58,30 +58,28 @@ def parse_article(article_url):
         publish_date = date_tag['datetime'] if date_tag and date_tag.has_attr('datetime') else "No date found"
 
         # Output the result
-        print(f"Title: {title}")
-        print(f"Publish Date: {publish_date}")
-        print(f"Content: {content[:200]}...")  # Display only the first 200 characters
-        print("-" * 50)
+        article_data = {
+            'title': title,
+            'category': category,
+            'publish_date': publish_date,
+            'content': content[:200]  # 只显示前200个字符
+        }
+
+        return article_data
         # return article_url, title, publish_date, content
 
     except Exception as e:
         print(f"Error fetching article {article_url}: {e}")
 
+
 if __name__ == "__main__":
-    # categories = fetch_category_links()  # 获取分类链接
-    # print(f"Categories: {categories}")
     start_time = time.time()
     print("Starting article fetching process...")
-
-
-    # for category_name, category_url in categories:
-    #     print(f"Fetching articles from category: {category_name}")
-
-        # fetch_articles_with_threads(articles)
-        # print(category_url)
     print("-"*40)
         # article_links = fetch_article_links(category_url)
     # print(fetch_articles_threads())
     fetch_articles_threads()
+    a=parse_article('https://www.bbc.com/news/articles/cj4x71znwxdo','US Election')
+    print(a)
 
     print(f"Finished article fetching process in {time.time() - start_time:.2f} seconds.")
