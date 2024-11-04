@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from config import NEWS_SOURCES, HEADERS
+from crawler.config import NEWS_SOURCES, HEADERS
 
 
 # bbc_home_url = 'https://www.bbc.com/news'

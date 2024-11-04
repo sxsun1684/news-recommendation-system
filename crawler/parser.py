@@ -4,6 +4,9 @@ from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from fetch_news import fetch_category_links, fetch_article_links
 
+from fetch_publish_date import fetch_publish_date
+
+
 # Use a thread pool to concurrently fetch articles
 def fetch_articles_threads():
     all_results_category = []
@@ -53,15 +56,10 @@ def parse_article(article_url,category):
         paragraphs = soup.find_all('p')
         content = "\n".join([para.get_text() for para in paragraphs])
 
-        # 3. Extract the publication date
-        date_tag = soup.find('time')
-        publish_date = date_tag['datetime'] if date_tag and date_tag.has_attr('datetime') else "No date found"
-
         # Output the result
         article_data = {
             'title': title,
             'category': category,
-            'publish_date': publish_date,
             'content': content[:200]  # 只显示前200个字符
         }
 
@@ -79,7 +77,13 @@ if __name__ == "__main__":
         # article_links = fetch_article_links(category_url)
     # print(fetch_articles_threads())
     fetch_articles_threads()
+    article_url='https://www.bbc.com/news/articles/cj4x71znwxdo'
     a=parse_article('https://www.bbc.com/news/articles/cj4x71znwxdo','US Election')
     print(a)
 
+
+
     print(f"Finished article fetching process in {time.time() - start_time:.2f} seconds.")
+    # t=fetch_publish_date(article_url)
+    # print(t)
+    # print(f"Finished article fetching process in {time.time() - start_time:.2f} seconds.")
