@@ -9,7 +9,7 @@ from multiprocessing import Process
 # set Selenium WebDriver
 def create_webdriver():
     chrome_options = Options()
-    chrome_options.add_argument("--headless")  # 无头模式
+    chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
