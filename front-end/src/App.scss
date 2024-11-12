@@ -1,0 +1,15 @@
+// App.scss
+$primary-color  : #3498db;
+$secondary-color: #7cb5da;
+$text-color     :#b6b6b6;
+
+#root {
+    max-width : 1280px;
+    margin    : 0 auto;
+    padding   : 2rem;
+    text-align: center;
+}
+
+.read-the-docs {
+    color: $text-color;
+}

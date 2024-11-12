@@ -1,7 +1,5 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// import { useState } from 'react'
+import './App.scss'
 import Navbar from "./components/Navbar/Narbar";
 import Searchbar from './components/Searchbar/Searchbar'
 
@@ -18,7 +16,7 @@ function App() {
 
       </div>
       <p className="read-the-docs">
-        Stay informed with personalized news tailored to your interests.
+        Stay informed with personalized news tailored to your interests.@NewsHub
       </p>
     </>
   )
