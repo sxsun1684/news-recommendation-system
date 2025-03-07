@@ -1,25 +1,21 @@
-// import { useState } from 'react'
-import './App.scss'
-import Navbar from "./components/Navbar/Narbar";
-import Searchbar from './components/Searchbar/Searchbar'
-
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
+import './App.scss';
+import Navbar from "./components/Navbar/Navbar";
+import Searchbar from './components/Searchbar/Searchbar';
+import CategoryPage from './pages/CategoryPage';
+import HomePage from './pages/HomePage';
 
 function App() {
-  // const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <h1>News Recommendation System</h1>
-      <div className="card">
-          <Navbar />
-          <Searchbar />
-
-      </div>
-      <p className="read-the-docs">
-        Stay informed with personalized news tailored to your interests.@NewsHub
-      </p>
-    </>
-  )
+    return (
+        <Router>
+            <Navbar/>
+            <Searchbar/>
+            <Routes>
+                <Route path="/" element={<HomePage/>}/> {/* 主页 */}
+                <Route path="/category/:categoryName" element={<CategoryPage/>}/> {/* 分类页面 */}
+            </Routes>
+        </Router>
+    );
 }
 
-export default App
+export default App;

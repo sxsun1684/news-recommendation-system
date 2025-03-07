@@ -1,7 +1,7 @@
 // App.scss
-$primary-color  : #3498db;
-$secondary-color: #7cb5da;
-$text-color     :#b6b6b6;
+//$primary-color  : #3498db;
+//$secondary-color: #7cb5da;
+//$text-color     :#b6b6b6;
 
 #root {
     max-width : 1280px;
@@ -10,6 +10,27 @@ $text-color     :#b6b6b6;
     text-align: center;
 }
 
-.read-the-docs {
-    color: $text-color;
+.navbar {
+  @apply fixed top-0 left-0 w-full bg-white shadow-md py-4 px-6 z-50;
+}
+
+.navbar ul {
+  @apply flex justify-center space-x-6 text-xl font-semibold;
+}
+
+.navbar li a {
+  @apply hover:text-blue-500;
+}
+
+
+ul:not(.navbar ul) {
+  list-style: none;
+  padding: 0;
+  text-align: center;
+}
+
+li:not(.navbar li) {
+  display: inline-block;
+  margin: 0 10px;
+
 }

@@ -1,115 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Nerko+One&family=Overlock:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap');
-$background-color : #ffffff;
-$primary-color    : #0084ff;
-$secondary-color  : #7cb5da;
-$text-color       :#b6b6b6;
-$button-color     :#ffffff;
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 
 :root {
-    font-family            : Jost, Arial, sans-serif;
-    line-height            : 1.5;
-    font-weight            : 400;
-    font-synthesis         : none;
-    text-rendering         : optimizeLegibility;
-    -webkit-font-smoothing : antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  font-family: Jost, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-// 主体样式
-body {
-    margin     : 0;
-    display    : flex;
-    place-items: center;
-    min-width  : 320px;
-    min-height : 100vh;
-    padding    : 0 1em; // 增加侧边留白，便于小屏幕显示
-}
-
-// 链接样式
-a {
-    font-weight    : 500;
-    color          : #1a1a1a;
-    text-decoration: none;
-
-    &:hover {
-        color: $primary-color;
-    }
-}
-
-// 
-h1 {
-    font-size  : 3.2em;
-    line-height: 1.1;
-
-    // Responsive Header Size
-    @media (max-width: 768px) {
-        font-size: 2.5em;
-    }
-
-    @media (max-width: 480px) {
-        font-size: 2em;
-    }
-}
-
-// 按钮样式
-button {
-    border-radius   : 5px;
-    border          : 1px solid transparent;
-    padding         : 0.6em 1.2em;
-    font-size       : 1em;
-    font-weight     : 500;
-    font-family     : inherit;
-    background-color: $primary-color;
-    cursor          : pointer;
-    transition      : border-color 0.25s;
-
-    &:hover {
-        border-color: $button-color;
-    }
-
-    &:focus,
-    &:focus-visible {
-        outline: 4px auto -webkit-focus-ring-color;
-    }
-}
-
-// 主题适配（浅色主题）
-@media (prefers-color-scheme: light) {
-    :root {
-        background-color: $background-color;
-    }
-
-    a:hover {
-        color: $secondary-color;
-    }
-
-    button {
-        background-color: $primary-color;
-    }
-}
-
-ul {
-    list-style: none; // 去掉圆点
-    padding   : 0; // 移除默认的 padding
-    text-align: center; // 水平居中内容
-}
-
-li {
-    display: inline-block; // 让 li 元素水平排列
-    margin : 0 10px; // 添加间距，可根据需求调整
-}
-
-// 响应式布局
-@media (max-width: 768px) {
-    body {
-        flex-direction: column;
-        align-items   : center;
-        padding       : 1em;
-    }
-}
-
-@media (max-width: 480px) {
-    body {
-        padding: 0.5em;
-    }
-}
