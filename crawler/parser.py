@@ -119,16 +119,12 @@ def parse_article(article_url):
 
 if __name__ == "__main__":
     start_time = time.time()
-    print("Starting article fetching process...")
-    print("-"*40)
+    print("Starting article fetching process.......")
         # article_links = fetch_article_links(category_url)
     # print(fetch_articles_threads())
     fetch_articles_threads()
-    article_url='https://www.bbc.com/news/articles/cj4x71znwxdo'
     a=parse_article('https://www.bbc.com/culture/article/20250306-who-is-cindy-lee-pops-most-mysterious-sensation')
     print(a)
-
-
 
     print(f"Finished article fetching process in {time.time() - start_time:.2f} seconds.")
     # t=fetch_publish_date(article_url)

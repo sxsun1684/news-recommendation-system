@@ -44,7 +44,7 @@ def fetch_category_links():
         if (
                 'live' in category_url.lower()
                 or 'video' in category_name.lower()
-                or 'home' in category_name.lower()
+                # or 'home' in category_name.lower()
                 or 'news' in category_name.lower()
         ):
             continue  # Skip live and video categories
