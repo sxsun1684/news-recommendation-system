@@ -5,16 +5,19 @@ import Searchbar from './components/Searchbar/Searchbar';
 import CategoryPage from './pages/CategoryPage';
 import HomePage from './pages/HomePage';
 
+
 function App() {
     return (
+        // <AuthProvider>
         <Router>
             <Navbar/>
             <Searchbar/>
             <Routes>
-                <Route path="/" element={<HomePage/>}/> {/* 主页 */}
-                <Route path="/category/:categoryName" element={<CategoryPage/>}/> {/* 分类页面 */}
+                <Route path="/" element={<HomePage/>}/>
+                <Route path="/category/:categoryName" element={<CategoryPage/>}/>
             </Routes>
         </Router>
+        // </AuthProvider>
     );
 }
 

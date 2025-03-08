@@ -1,70 +1,115 @@
-
 import boto3
 import uuid
 import bcrypt
+from botocore.exceptions import ClientError
+
 
 class DynamoDB:
     def __init__(self, table_name="Users", region_name="us-west-1"):
-        """初始化 DynamoDB 连接"""
+        """Initialize the connection to DynamoDB"""
         self.dynamodb = boto3.resource("dynamodb", region_name=region_name)
         self.table = self.dynamodb.Table(table_name)
 
-    def hash_password(self, password):
-        """使用 bcrypt 加密密码"""
-        salt = bcrypt.gensalt()
-        return bcrypt.hashpw(password.encode(), salt).decode()
+    @staticmethod
+    def hash_password(password):
+        """Hash the password using bcrypt"""
+        return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
-    def verify_password(self, password, hashed_password):
-        """验证密码是否正确"""
+    @staticmethod
+    def verify_password(password, hashed_password):
+        """Verify if the provided password matches the stored hashed password"""
         return bcrypt.checkpw(password.encode(), hashed_password.encode())
 
-    def create_user(self, name, email, password, preferences):
-        """创建新用户（带密码加密）"""
-        user_id = str(uuid.uuid4())  # 生成唯一 ID
-        hashed_password = self.hash_password(password)  # 加密密码
+    def create_user(self, email, password, preferences):
+        """Create a new user while preventing duplicate registrations"""
 
-        self.table.put_item(
-            Item={
-                "user_id": user_id,
-                "name": name,
-                "email": email,
-                "password": hashed_password,  # 存储加密后的密码
-                "preferences": preferences
-            }
-        )
-        print(f"User {user_id} has been created！")
-        return user_id  # 返回生成的 ID
+        # Check if the user already exists
+        existing_user = self.get_user_by_email(email)
+        if existing_user:
+            print(f"❌ User with email {email} is already registered!")
+            return None  # Return None if registration fails
 
-    def get_user(self, email):
-        """查询用户（通过 email 获取）"""
-        response = self.table.scan(
-            FilterExpression="email = :email",
-            ExpressionAttributeValues={":email": email}
-        )
-        items = response.get("Items", [])
-        return items[0] if items else None
+        # Generate a unique user_id
+        new_user_id = str(uuid.uuid4())
+        hashed_password = self.hash_password(password)
+
+        try:
+            # Store user details in DynamoDB
+            self.table.put_item(
+                Item={
+                    "user_id": new_user_id,
+                    "email": email,
+                    "password": hashed_password,
+                    "preferences": preferences
+                }
+            )
+            print(f"✅ User {email} registered successfully! ID: {new_user_id}")
+            return new_user_id
+        except ClientError as e:
+            print("❌ Failed to store user data:", e)
+            return None
+
+    def get_user(self, user_id, email):
+        """Retrieve user information using user_id and email"""
+        try:
+            response = self.table.get_item(
+                Key={
+                    "user_id": user_id,
+                    "email": email
+                }
+            )
+            if "Item" in response:
+                return response["Item"]
+            else:
+                print("❌ User does not exist")
+                return None
+        except ClientError as e:
+            print(f"❌ Failed to retrieve user: {e}")
+            return None
+
+    def get_user_by_email(self, email):
+        """Retrieve user using email, assuming a Global Secondary Index (GSI) exists"""
+        try:
+            response = self.table.query(
+                IndexName="email-index",
+                KeyConditionExpression="email = :email",
+                ExpressionAttributeValues={":email": email}
+            )
+            items = response.get("Items", [])
+            return items[0] if items else None
+        except ClientError as e:
+            print(f"❌ Failed to retrieve user by email: {e}")
+            return None
 
     def authenticate_user(self, email, password):
-        """用户登录验证"""
-        user = self.get_user(email)
+        """Authenticate user: First find user_id using email, then verify password"""
+        user = self.get_user_by_email(email)
         if not user:
-            print("User not found")
+            print("❌ User not found")
             return False
 
-        if self.verify_password(password, user["password"]):
+        retrieved_user_id = user["user_id"]
+        full_user = self.get_user(retrieved_user_id, email)
+
+        if not full_user:
+            print("❌ User not found using user_id")
+            return False
+
+        if "password" in full_user and self.verify_password(password, full_user["password"]):
             print("✅ Login successful!")
-            return user  # 返回用户信息
+            return full_user
         else:
-            print("❌ Incorrect password!")
+            print("❌ Incorrect password")
             return False
 
 
-# ✅ 测试代码
+# Test code
 db = DynamoDB("Users", "us-west-1")
+#
+# # Create a user with encrypted password
+user_id = db.create_user("cc@neu.edu", "mypassword123", ["Tech", "Finance"])
 
-# 创建用户（密码加密）
-user_id = db.create_user("Alice", "alice@example.com", "mypassword123", ["Tech", "Finance"])
-
-# 测试用户登录（验证密码）
-db.authenticate_user("alice@example.com", "mypassword123")  # ✅ 正确密码
-db.authenticate_user("alice@example.com", "wrongpassword")  # ❌ 错误密码
+# Test user login (password verification)
+db.authenticate_user("cc@neu.edu", "mypassword123")  # ✅ Correct password
+db.authenticate_user("cc@neu.edu", "wrongpassword")  # ❌ Incorrect password
+u = db.create_user("cc1@neu.edu", "mypassword123", ["Tech", "Finance"])
