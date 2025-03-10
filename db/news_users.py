@@ -4,7 +4,7 @@ import bcrypt
 from botocore.exceptions import ClientError
 
 
-class DynamoDB:
+class NewsUserDB:
     def __init__(self, table_name="Users", region_name="us-west-1"):
         """Initialize the connection to DynamoDB"""
         self.dynamodb = boto3.resource("dynamodb", region_name=region_name)
@@ -49,13 +49,14 @@ class DynamoDB:
             print("❌ Failed to store user data:", e)
             return None
 
-    def get_user(self, user_id, email):
+    def get_user(self, user_id, email,client_ip):
         """Retrieve user information using user_id and email"""
         try:
             response = self.table.get_item(
                 Key={
                     "user_id": user_id,
-                    "email": email
+                    "email": email,
+                    "client_ip": client_ip
                 }
             )
             if "Item" in response:
@@ -104,7 +105,7 @@ class DynamoDB:
 
 
 # Test code
-db = DynamoDB("Users", "us-west-1")
+db = NewsUserDB("Users", "us-west-1")
 #
 # # Create a user with encrypted password
 user_id = db.create_user("cc@neu.edu", "mypassword123", ["Tech", "Finance"])

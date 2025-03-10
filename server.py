@@ -1,12 +1,12 @@
 import re
 from flask import Flask, jsonify, request, session
 from flask_cors import CORS
-from crawler.parser import fetch_articles_threads
+# from crawler.parser import fetch_articles_threads
 import os
 from dotenv import load_dotenv
 from flask_session import Session
-from dynamo.dynamodb import DynamoDB
 
+from db.news_users import NewsUserDB
 app = Flask(__name__)
 CORS(
     app,
@@ -29,7 +29,7 @@ app.config["SESSION_USE_SIGNER"] = True
 Session(app)
 
 # 🔥 Initialize DynamoDB
-db = DynamoDB("Users", "us-west-1")
+db = NewsUserDB("Users", "us-west-1")
 
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 
@@ -135,21 +135,21 @@ def category(category_name):
 
 
 ### 🔍 Search News Articles
-@app.route('/search')
-def search():
-    """
-    Retrieve search results based on a query.
-
-    Query Parameters:
-        q (str): The search keyword to match article titles.
-
-    Returns:
-        JSON: A dictionary containing the search query and matching news articles.
-    """
-    query = request.args.get('q', '').lower()
-    news_data = fetch_articles_threads()
-    search_results = [news for news in news_data if query in news['title'].lower()]
-    return jsonify({"query": query, "results": search_results})
+# @app.route('/search')
+# def search():
+#     """
+#     Retrieve search results based on a query.
+#
+#     Query Parameters:
+#         q (str): The search keyword to match article titles.
+#
+#     Returns:
+#         JSON: A dictionary containing the search query and matching news articles.
+#     """
+#     query = request.args.get('q', '').lower()
+#     news_data = fetch_articles_threads()
+#     search_results = [news for news in news_data if query in news['title'].lower()]
+#     return jsonify({"query": query, "results": search_results})
 
 
 if __name__ == '__main__':

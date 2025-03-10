@@ -1,26 +1,46 @@
 import requests
 from bs4 import BeautifulSoup
 from crawler.config import NEWS_SOURCES, HEADERS
+from db.news_categories import table
+
+# Cache for storing fetched news categories to reduce redundant network requests
+CATEGORY_CACHE = None
 
 
-# bbc_home_url = 'https://www.bbc.com/news'
-
-
-# Fetch news category links from the navigation bar
-def fetch_category_links():
+def save_categories_to_dynamodb(categories):
     """
-    Fetches the news category links from the BBC homepage navigation bar.
+    Saves the fetched news categories to AWS DynamoDB.
 
-    This function sends a request to the BBC homepage, parses the HTML to locate
-    the navigation bar, and extracts the links to different news categories. It filters
-    out links related to live broadcasts or video content.
+    Args:
+        categories (list): A list of tuples containing category name and URL.
+    """
+    with table.batch_writer() as batch:
+        for category in categories:
+            batch.put_item(Item={
+                'category_name': category[0],  # ✅ Used as the primary key
+                'category_url': category[1]
+            })
+    print("✅ Category data has been saved to DynamoDB")
+
+
+def fetch_category_links(force_update=False):
+    """
+    Fetches news category links from the BBC homepage navigation bar.
+
+    If cached data is available, it returns the cached version unless force_update is set to True.
+
+    Args:
+        force_update (bool): If True, forces a fresh request to fetch categories.
 
     Returns:
-        categories (list): A list of [category_name, category_url] pairs. Each entry
-        contains the name of the news category and the corresponding full URL. If
-        the navigation bar is not found or the request fails, it returns an empty list
-        or an error message.
+        list: A list of news categories, each containing category name and URL.
     """
+    global CATEGORY_CACHE  # Use a global cache to avoid repeated web scraping
+
+    if CATEGORY_CACHE and not force_update:
+        print("✅ Using cached category data")
+        return CATEGORY_CACHE
+
     response = requests.get(NEWS_SOURCES[0], headers=HEADERS)
 
     if response.status_code != 200:
@@ -28,7 +48,8 @@ def fetch_category_links():
 
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    nav = soup.find('nav')  # Search for the navigation bar
+    # Locate the navigation bar containing category links
+    nav = soup.find('nav')
     if not nav:
         print("Navigation bar not found")
         return []
@@ -37,51 +58,28 @@ def fetch_category_links():
 
     categories = []
     for link in links:
-        category_name = link.get_text().strip()  # Get the category name
-        category_url = link['href']  # Get the category URL
+        category_name = link.get_text().strip()  # Extract the category name
+        category_url = link['href']  # Extract the category URL
 
         # Skip links related to live broadcasts or video content
         if (
                 'live' in category_url.lower()
                 or 'video' in category_name.lower()
-                # or 'home' in category_name.lower()
-                or 'news' in category_name.lower()
+                # or 'news' in category_name.lower()
         ):
-            continue  # Skip live and video categories
+            continue  # Ignore live and video categories
 
-        # Complete relative URLs by adding the base URL
+        # Convert relative URLs to absolute URLs
         if category_url.startswith('/'):
             category_url = 'https://www.bbc.com' + category_url
 
-        categories.append([category_name, category_url])  # Add category details to the list
+        categories.append([category_name, category_url])  # Add to category list
 
+    CATEGORY_CACHE = categories  # Update cache
+    save_categories_to_dynamodb(categories)  # Save to database
     return categories
 
 
-
-def fetch_article_links(category_url):
-    """
-    Fetches the article links from a given news category page.
-
-    This function sends a request to the provided category URL, parses the HTML
-    content, and extracts all links that are considered articles (based on URL structure).
-
-    Args:
-        category_url (str): The URL of the news category from which to scrape articles.
-
-    Returns:
-        articles (list): A list of full URLs pointing to individual news articles from
-        the given category page. Only links that contain 'article' in the URL are included.
-    """
-    response = requests.get(category_url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-
-    articles = []
-    for link in soup.find_all('a', href=True):
-        href = link['href']
-        # Filter links that contain 'article' in their href attribute
-        if 'article' in href:
-            article_url = f"https://www.bbc.com{href}"
-            articles.append(article_url)
-
-    return articles
+if __name__ == "__main__":
+    print(fetch_category_links())  # Fetch and print category links
+    print(CATEGORY_CACHE)  # Print cached category data
