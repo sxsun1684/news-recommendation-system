@@ -119,32 +119,32 @@ class NewsParser:
         return parsed_results
 
 
-# ✅ Example article data
-article_data = {
-    "Earth": [
-        "https://www.bbc.com/news/articles/czrnyde158po",
-        "https://www.bbc.com/news/articles/c70ekknr2rwo",
-        "https://www.bbc.com/future/article/20250227-the-vermont-farmers-using-urine-to-grow-their-crops",
-        "https://www.bbc.com/news/articles/cvgeqw601eyo",
-        "https://www.bbc.com/news/articles/c0q18gkegjpo",
-        "https://www.bbc.com/future/article/20250219-kirby-misperton-the-former-fracking-site-now-tapped-for-clean-heat",
-        "https://www.bbc.com/future/article/20250221-the-women-protecting-snow-leopards-in-remotest-nepal",
-        "https://www.bbc.com/news/articles/cq8y3xgkpw9o",
-        "https://www.bbc.com/future/article/20250303-the-worlds-strongest-ocean-current-is-at-risk",
-        "https://www.bbc.com/news/articles/czedpnen168o",
-        "https://www.bbc.com/news/articles/c3e4nlxlq08o",
-        "https://www.bbc.com/news/articles/cg5ddnmnypvo",
-        "https://www.bbc.com/news/articles/cddymq71zq5o",
-        "https://www.bbc.com/news/articles/cj3nlrjnn0vo",
-        "https://www.bbc.com/news/articles/cpv4m3x1ldgo",
-        "https://www.bbc.com/news/articles/c4g0pz0wqp9o",
-        "https://www.bbc.com/future/article/20250305-what-is-the-most-sustainable-period-product",
-        "https://www.bbc.com/news/articles/c2erkry8jn8o"
-    ]
-}
-
 # 🚀 **Run the parser**
 if __name__ == "__main__":
+    # ✅ Example article data
+    article_data = {
+        "Earth": [
+            "https://www.bbc.com/news/articles/czrnyde158po",
+            "https://www.bbc.com/news/articles/c70ekknr2rwo",
+            "https://www.bbc.com/future/article/20250227-the-vermont-farmers-using-urine-to-grow-their-crops",
+            "https://www.bbc.com/news/articles/cvgeqw601eyo",
+            "https://www.bbc.com/news/articles/c0q18gkegjpo",
+            "https://www.bbc.com/future/article/20250219-kirby-misperton-the-former-fracking-site-now-tapped-for-clean-heat",
+            "https://www.bbc.com/future/article/20250221-the-women-protecting-snow-leopards-in-remotest-nepal",
+            "https://www.bbc.com/news/articles/cq8y3xgkpw9o",
+            "https://www.bbc.com/future/article/20250303-the-worlds-strongest-ocean-current-is-at-risk",
+            "https://www.bbc.com/news/articles/czedpnen168o",
+            "https://www.bbc.com/news/articles/c3e4nlxlq08o",
+            "https://www.bbc.com/news/articles/cg5ddnmnypvo",
+            "https://www.bbc.com/news/articles/cddymq71zq5o",
+            "https://www.bbc.com/news/articles/cj3nlrjnn0vo",
+            "https://www.bbc.com/news/articles/cpv4m3x1ldgo",
+            "https://www.bbc.com/news/articles/c4g0pz0wqp9o",
+            "https://www.bbc.com/future/article/20250305-what-is-the-most-sustainable-period-product",
+            "https://www.bbc.com/news/articles/c2erkry8jn8o"
+        ]
+    }
+
     print("\n📄 Parsing all articles...")
     parser = NewsParser(article_data)
     parsed_articles = parser.parse_all_articles()

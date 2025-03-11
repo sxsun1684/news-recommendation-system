@@ -167,114 +167,115 @@
 #     print(f"Finished article fetching process in {time.time() - start_time:.2f} seconds.")
 #
 
+#---------------------------------------
 
-import requests
-import time
-import re
-from bs4 import BeautifulSoup
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from crawler.fetch_news import fetch_category_links
-from crawler.fetch_article_links import fetch_all_articles as fetch_article_links
-from functools import wraps
-
-
-def retry_on_failure(retries=3, delay=2):
-    """Decorator to retry a function call upon failure."""
-
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            for attempt in range(retries):
-                try:
-                    return func(*args, **kwargs)
-                except Exception as e:
-                    print(f"❌ Error in {func.__name__}: {e}, retrying {attempt + 1}/{retries}")
-                    time.sleep(delay)
-            return None  # Return None if all retry attempts fail
-
-        return wrapper
-
-    return decorator
-
-
-class NewsParser:
-    def __init__(self, max_workers=5):
-        self.max_workers = max_workers
-        self.articles_by_category = self.fetch_articles_threads()
-
-    def fetch_articles_threads(self):
-        """Fetches article links concurrently for multiple categories."""
-        all_results_category = {}
-        categories = fetch_category_links()
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            future_to_category = {executor.submit(fetch_article_links): cat[0] for cat in categories}
-            for future in as_completed(future_to_category):
-                category = future_to_category[future]
-                try:
-                    articles = future.result()
-                    if articles:
-                        all_results_category[category] = list(set(articles))  # 去重
-                except Exception as e:
-                    print(f"❌ 爬取 {category} 失败: {e}")
-
-        return all_results_category
-
-    def find_category_by_url(self, url):
-        """Finds the news category for a given article URL."""
-        for category, urls in self.articles_by_category.items():
-            if url in urls:
-                return category
-        return "Unknown Category"
-
-    def extract_date_from_url(self, article_url):
-        """Extracts the publication date from a structured article URL."""
-        match = re.search(r'/(\d{8})-', article_url)
-        if match:
-            date_str = match.group(1)
-            return f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}"
-        return "Unknown Date"
-
-    @retry_on_failure(retries=3, delay=2)
-    def parse_article(self, article_url):
-        """Fetches and parses an article."""
-        try:
-            response = requests.get(article_url)
-            if response.status_code != 200:
-                print(f"⚠️ Failed to fetch article: {article_url}")
-                return None
-
-            soup = BeautifulSoup(response.text, 'html.parser')
-            title_tag = soup.find('h1')
-            title = title_tag.get_text(strip=True) if title_tag else "No title found"
-            paragraphs = soup.find_all('p')
-            content = "\n".join([para.get_text(strip=True) for para in paragraphs])
-
-            # 自动获取分类
-            category = self.find_category_by_url(article_url)
-
-            # 获取发布时间
-            timestamp = self.extract_date_from_url(article_url)
-
-            return {
-                'title': title,
-                'category': category,
-                'timestamp': timestamp,
-                'content': content[:200]
-            }
-
-        except Exception as e:
-            print(f"❌ Error fetching article {article_url}: {e}")
-            return None
-
-
-#test
-parser = NewsParser()
-
-# 获取所有新闻分类和链接
-print(parser.articles_by_category)
-
-# 解析某篇文章
-article_url = "https://www.bbc.com/culture/article/20250306-who-is-cindy-lee-pops-most-mysterious-sensation"
-article_data = parser.parse_article(article_url)
-
-print(article_data)
+# import requests
+# import time
+# import re
+# from bs4 import BeautifulSoup
+# from concurrent.futures import ThreadPoolExecutor, as_completed
+# from crawler.fetch_news import fetch_category_links
+# from crawler.fetch_article_links import fetch_all_articles as fetch_article_links
+# from functools import wraps
+#
+#
+# def retry_on_failure(retries=3, delay=2):
+#     """Decorator to retry a function call upon failure."""
+#
+#     def decorator(func):
+#         @wraps(func)
+#         def wrapper(*args, **kwargs):
+#             for attempt in range(retries):
+#                 try:
+#                     return func(*args, **kwargs)
+#                 except Exception as e:
+#                     print(f"❌ Error in {func.__name__}: {e}, retrying {attempt + 1}/{retries}")
+#                     time.sleep(delay)
+#             return None  # Return None if all retry attempts fail
+#
+#         return wrapper
+#
+#     return decorator
+#
+#
+# class NewsParser:
+#     def __init__(self, max_workers=5):
+#         self.max_workers = max_workers
+#         self.articles_by_category = self.fetch_articles_threads()
+#
+#     def fetch_articles_threads(self):
+#         """Fetches article links concurrently for multiple categories."""
+#         all_results_category = {}
+#         categories = fetch_category_links()
+#         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+#             future_to_category = {executor.submit(fetch_article_links): cat[0] for cat in categories}
+#             for future in as_completed(future_to_category):
+#                 category = future_to_category[future]
+#                 try:
+#                     articles = future.result()
+#                     if articles:
+#                         all_results_category[category] = list(set(articles))  # 去重
+#                 except Exception as e:
+#                     print(f"❌ 爬取 {category} 失败: {e}")
+#
+#         return all_results_category
+#
+#     def find_category_by_url(self, url):
+#         """Finds the news category for a given article URL."""
+#         for category, urls in self.articles_by_category.items():
+#             if url in urls:
+#                 return category
+#         return "Unknown Category"
+#
+#     def extract_date_from_url(self, article_url):
+#         """Extracts the publication date from a structured article URL."""
+#         match = re.search(r'/(\d{8})-', article_url)
+#         if match:
+#             date_str = match.group(1)
+#             return f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}"
+#         return "Unknown Date"
+#
+#     @retry_on_failure(retries=3, delay=2)
+#     def parse_article(self, article_url):
+#         """Fetches and parses an article."""
+#         try:
+#             response = requests.get(article_url)
+#             if response.status_code != 200:
+#                 print(f"⚠️ Failed to fetch article: {article_url}")
+#                 return None
+#
+#             soup = BeautifulSoup(response.text, 'html.parser')
+#             title_tag = soup.find('h1')
+#             title = title_tag.get_text(strip=True) if title_tag else "No title found"
+#             paragraphs = soup.find_all('p')
+#             content = "\n".join([para.get_text(strip=True) for para in paragraphs])
+#
+#             # 自动获取分类
+#             category = self.find_category_by_url(article_url)
+#
+#             # 获取发布时间
+#             timestamp = self.extract_date_from_url(article_url)
+#
+#             return {
+#                 'title': title,
+#                 'category': category,
+#                 'timestamp': timestamp,
+#                 'content': content[:200]
+#             }
+#
+#         except Exception as e:
+#             print(f"❌ Error fetching article {article_url}: {e}")
+#             return None
+#
+#
+# #test
+# parser = NewsParser()
+#
+# # 获取所有新闻分类和链接
+# print(parser.articles_by_category)
+#
+# # 解析某篇文章
+# article_url = "https://www.bbc.com/culture/article/20250306-who-is-cindy-lee-pops-most-mysterious-sensation"
+# article_data = parser.parse_article(article_url)
+#
+# print(article_data)
