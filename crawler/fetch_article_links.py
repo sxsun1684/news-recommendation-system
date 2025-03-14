@@ -36,11 +36,11 @@ def fetch_article_links(category_name, category_url):
     Returns:
         list: A list of article URLs under the specified category.
     """
-    print(f"🌐 Fetching articles from category {category_name}: {category_url}")
+    # print(f"🌐 Fetching articles from category {category_name}: {category_url}")
 
     # Check cache before making a request
     if category_name in ARTICLE_CACHE:
-        print(f"✅ Loading cached articles for {category_name}...")
+        # print(f"✅ Loading cached articles for {category_name}...")
         return ARTICLE_CACHE[category_name]
 
     try:
@@ -62,7 +62,7 @@ def fetch_article_links(category_name, category_url):
 
         articles = list(set(articles))  # Remove duplicates
         ARTICLE_CACHE[category_name] = articles  # Store in cache
-        print(f"✅ Finished fetching {category_name}: {len(articles)} articles found")
+        # print(f"✅ Finished fetching {category_name}: {len(articles)} articles found")
         return articles
     except Exception as e:
         print(f"❌ Failed to scrape {category_name}: {e}")
@@ -98,8 +98,8 @@ def fetch_all_articles():
     return article_dict
 
 
-# 🚀 **Run the scraper**
-if __name__ == "__main__":
-    print("📰 Fetching all news articles...")
-    news_data = fetch_all_articles()
-    print(news_data)  # Print the fetched article data
+# # 🚀 **Run the scraper**
+# if __name__ == "__main__":
+#     print("📰 Fetching all news articles...")
+#     news_data = fetch_all_articles()
+#     print(news_data)  # Print the fetched article data
