@@ -28,3 +28,25 @@ const SearchBar = ({onSearch}) => {
 
 export default SearchBar;
 
+
+// import React, {useState} from "react";
+//
+// const SearchBar = ({setSearchResults}) => {
+//     const [query, setQuery] = useState("");
+//
+//     const handleSearch = () => {
+//         fetch(`http://localhost:5000/search?query=${query}`)
+//             .then((res) => res.json())
+//             .then((data) => setSearchResults(data))
+//             .catch((err) => console.error("fail:", err));
+//     };
+//
+//     return (
+//         <div>
+//             <input type="text" value={query} onChange={(e) => setQuery(e.target.value)}/>
+//             <button onClick={handleSearch}>🔍 搜索</button>
+//         </div>
+//     );
+// };
+//
+// export default SearchBar;
