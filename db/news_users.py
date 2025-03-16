@@ -49,7 +49,7 @@ class NewsUserDB:
             print("❌ Failed to store user data:", e)
             return None
 
-    def get_user(self, user_id, email,client_ip):
+    def get_user(self, user_id, email,client_ip=None):
         """Retrieve user information using user_id and email"""
         try:
             response = self.table.get_item(
@@ -104,13 +104,13 @@ class NewsUserDB:
             return False
 
 
-# Test code
-db = NewsUserDB("Users", "us-west-1")
+# # Test code
+# db = NewsUserDB("Users", "us-west-1")
+# #
+# # # Create a user with encrypted password
+# user_id = db.create_user("cc@neu.edu", "mypassword123", ["Tech", "Finance"])
 #
-# # Create a user with encrypted password
-user_id = db.create_user("cc@neu.edu", "mypassword123", ["Tech", "Finance"])
-
-# Test user login (password verification)
-db.authenticate_user("cc@neu.edu", "mypassword123")  # ✅ Correct password
-db.authenticate_user("cc@neu.edu", "wrongpassword")  # ❌ Incorrect password
-u = db.create_user("cc1@neu.edu", "mypassword123", ["Tech", "Finance"])
+# # Test user login (password verification)
+# db.authenticate_user("cc@neu.edu", "mypassword123")  # ✅ Correct password
+# db.authenticate_user("cc@neu.edu", "wrongpassword")  # ❌ Incorrect password
+# u = db.create_user("cc1@neu.edu", "mypassword123", ["Tech", "Finance"])

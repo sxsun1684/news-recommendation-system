@@ -1,12 +1,13 @@
 import re
 from flask import Flask, jsonify, request, session
 from flask_cors import CORS
-# from crawler.parser import fetch_articles_threads
+import boto3
 import os
 from dotenv import load_dotenv
 from flask_session import Session
 
 from db.news_users import NewsUserDB
+
 app = Flask(__name__)
 CORS(
     app,
@@ -118,19 +119,35 @@ def get_news():
 
 
 ### 📌 Get News by Category
-@app.route('/category/<category_name>')
+# @app.route('/category/<category_name>')
+# def category(category_name):
+#     """
+#     Retrieve news articles filtered by category.
+#
+#     Args:
+#         category_name (str): The category name for filtering news articles.
+#
+#     Returns:
+#         JSON: A dictionary containing the category name and filtered list of news articles.
+#     """
+#     # news_data = fetch_articles_threads()
+#     # filtered_news = [news for news in news_data if news['category'] == category_name]
+#     # return jsonify({"category": category_name, "news": filtered_news})
+
+dynamodb = boto3.resource("dynamodb", region_name="us-west-1")
+table = dynamodb.Table("NewsCategories")
+@app.route('/category/<category_name>', methods=["GET"])
 def category(category_name):
     """
-    Retrieve news articles filtered by category.
-
-    Args:
-        category_name (str): The category name for filtering news articles.
-
-    Returns:
-        JSON: A dictionary containing the category name and filtered list of news articles.
+    Retrieve news articles filtered by category from DynamoDB.
     """
-    news_data = fetch_articles_threads()
-    filtered_news = [news for news in news_data if news['category'] == category_name]
+    # 查询 DynamoDB，获取指定类别的新闻
+    response = table.scan(
+        FilterExpression="category = :c",
+        ExpressionAttributeValues={":c": category_name}
+    )
+    filtered_news = response["Items"]
+
     return jsonify({"category": category_name, "news": filtered_news})
 
 

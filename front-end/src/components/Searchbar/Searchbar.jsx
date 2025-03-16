@@ -1,10 +1,13 @@
 import {useState} from "react";
 
-const SearchBar = ({onSearch}) => {
+const SearchBar = ({setSearchResults}) => {
     const [query, setQuery] = useState("");
 
     const handleSearch = () => {
-        onSearch(query);
+        fetch(`http://localhost:5000/search?query=${query}`)
+            .then((res) => res.json())
+            .then((data) => setSearchResults(data))
+            .catch((err) => console.error("fail:", err));
     };
 
     return (
