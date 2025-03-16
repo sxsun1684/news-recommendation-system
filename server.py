@@ -12,11 +12,10 @@ app = Flask(__name__)
 CORS(
     app,
     supports_credentials=True,
-    origins=["http://localhost:5173"],
-    allow_headers=["Content-Type"],
+    origins=["http://localhost:5173"],  # 只允许 5173
+    allow_headers=["Content-Type", "Authorization"],
     methods=["GET", "POST", "OPTIONS"]
 )
-
 # Load environment variables
 load_dotenv()
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
@@ -142,13 +141,26 @@ def category(category_name):
     Retrieve news articles filtered by category from DynamoDB.
     """
     # 查询 DynamoDB，获取指定类别的新闻
-    response = table.scan(
-        FilterExpression="category = :c",
-        ExpressionAttributeValues={":c": category_name}
-    )
-    filtered_news = response["Items"]
+    limit = int(request.args.get("limit", 10))  # 每次返回 10 条新闻
+    last_evaluated_key = request.args.get("last_key")  # 分页起始点
 
-    return jsonify({"category": category_name, "news": filtered_news})
+    scan_kwargs = {
+        "FilterExpression": "category = :c",
+        "ExpressionAttributeValues": {":c": category_name},
+        "Limit": limit,
+    }
+
+    if last_evaluated_key:
+        scan_kwargs["ExclusiveStartKey"] = {"news_id": last_evaluated_key}
+
+    response = table.scan(**scan_kwargs)
+    filtered_news = response["Items"]  # 这里包含 title, content, url
+
+    return jsonify({
+        "category": category_name,
+        "news": filtered_news,  # 返回所有新闻
+        "last_key": response.get("LastEvaluatedKey")  # 分页
+    })
 
 
 ### 🔍 Search News Articles
