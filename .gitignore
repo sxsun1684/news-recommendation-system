@@ -5,3 +5,4 @@ __pycache__/
 flask_session/
 front-end/src/.sass-cache
 
+.env
