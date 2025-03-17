@@ -7,9 +7,16 @@ const Navbar = () => {
             {/* Navigation bar with a subtle shadow and adjusted height */}
             <ul className="flex justify-center items-center space-x-8 list-none">
                 {/* Flexbox layout to center items with equal spacing */}
+
                 <li>
                     <Link to="/" className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition">
                         Home
+                    </Link>
+                </li>
+                <li>
+                    <Link to="/category/home"
+                          className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition">
+                        News
                     </Link>
                 </li>
                 <li>
@@ -58,12 +65,6 @@ const Navbar = () => {
                     <Link to="/category/innovation"
                           className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition">
                         Innovation
-                    </Link>
-                </li>
-                <li>
-                    <Link to="/category/special"
-                          className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition">
-                        Special
                     </Link>
                 </li>
             </ul>
