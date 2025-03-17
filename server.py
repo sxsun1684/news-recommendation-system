@@ -5,7 +5,7 @@ import boto3
 import os
 from dotenv import load_dotenv
 from flask_session import Session
-
+from werkzeug.security import generate_password_hash
 from db.news_users import NewsUserDB
 
 app = Flask(__name__)
@@ -36,31 +36,53 @@ EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 
 ### 🚀 1. User Registration API
 @app.route('/api/auth/register', methods=['POST'])
+# def register():
+#     """Registers a new user with email and password"""
+#     data = request.json
+#     email = data.get("email")
+#     password = data.get("password")
+#
+#     if not EMAIL_REGEX.match(email):
+#         return jsonify({"message": "Invalid email format"}), 400
+#
+#     if not email or not password:
+#         return jsonify({"message": "Email and password cannot be empty"}), 400
+#
+#     # ✅ Check if the email is already registered
+#     existing_user = db.get_user_by_email(email)
+#     if existing_user:
+#         return jsonify({"message": "Email is already registered"}), 409
+#
+#         # ✅ Create the user and return their ID
+#     new_user_id = db.create_user(email, password, [])
+#     if not new_user_id:
+#         return jsonify({"message": "Database error, please try again later"}), 500
+#
+#     print(f"✅ User {email} registered successfully!")
+#     return jsonify({"message": "Registration successful", "user_id": new_user_id}), 201
 def register():
-    """Registers a new user with email and password"""
+    """注册新用户（密码会哈希存储）"""
     data = request.json
     email = data.get("email")
     password = data.get("password")
 
-    if not EMAIL_REGEX.match(email):
-        return jsonify({"message": "Invalid email format"}), 400
-
     if not email or not password:
-        return jsonify({"message": "Email and password cannot be empty"}), 400
+        return jsonify({"message": "邮箱和密码不能为空"}), 400
 
-    # ✅ Check if the email is already registered
+    if not EMAIL_REGEX.match(email):  # 假设你有EMAIL_REGEX校验邮箱格式
+        return jsonify({"message": "邮箱格式无效"}), 400
+
     existing_user = db.get_user_by_email(email)
     if existing_user:
-        return jsonify({"message": "Email is already registered"}), 409
+        return jsonify({"message": "邮箱已注册"}), 409
 
-        # ✅ Create the user and return their ID
-    new_user_id = db.create_user(email, password, [])
+    hashed_password = generate_password_hash(password)  # 🔑 加密密码存储
+    new_user_id = db.create_user(email, hashed_password, [])
+
     if not new_user_id:
-        return jsonify({"message": "Database error, please try again later"}), 500
+        return jsonify({"message": "数据库错误，请稍后重试"}), 500
 
-    print(f"✅ User {email} registered successfully!")
-    return jsonify({"message": "Registration successful", "user_id": new_user_id}), 201
-
+    return jsonify({"message": "注册成功"}), 201
 
 ### 🚀 2. User Login API
 @app.route('/api/auth/login', methods=['POST'])
