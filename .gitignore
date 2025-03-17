@@ -1,2 +1,7 @@
 
 .env
+.venv/
+__pycache__/
+*.pyc
+.idea/
+flask_session/
