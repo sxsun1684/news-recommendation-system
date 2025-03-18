@@ -1,13 +1,17 @@
 import re
-from flask import Flask, jsonify, request, session
-from flask_cors import CORS
-from crawler.parser import fetch_articles_threads
 import os
 import boto3
+import json
+from boto3.dynamodb.conditions import Key
 from dotenv import load_dotenv
 from flask_session import Session
 from dynamo.dynamodb import DynamoDB
 from boto3.dynamodb.conditions import Attr
+from kafka import KafkaProducer
+from flask import Flask, jsonify, request, session
+from flask_cors import CORS
+from crawler.parser import fetch_articles_threads
+from confluent_kafka import Producer
 
 app = Flask(__name__)
 CORS(
@@ -65,6 +69,8 @@ def register():
 
 
 ### 🚀 2. User Login API
+from flask import session, jsonify, request
+
 @app.route('/api/auth/login', methods=['POST'])
 def login():
     """Authenticates a user and starts a session"""
@@ -72,20 +78,24 @@ def login():
     email = data.get("email")
     password = data.get("password")
 
+    # 验证用户身份
     user = db.authenticate_user(email, password)
     if not user:
         return jsonify({"message": "Invalid email or password"}), 401
 
+    # 将用户信息存储到 session 中
     session["user"] = {"user_id": user["user_id"], "email": user["email"]}
     session.modified = True
 
+    # 返回登录成功的响应，并设置 CORS 相关头
     response = jsonify({"message": "Login successful", "user": session["user"]})
     response.headers["Access-Control-Allow-Origin"] = "http://localhost:5173"
     response.headers["Access-Control-Allow-Credentials"] = "true"
 
     print(f"🔑 Set-Cookie: {response.headers}")
-    return response
 
+
+    return response
 
 ### 🚀 3. Get Current User API
 @app.route('/api/auth/me', methods=['GET'])
@@ -112,6 +122,7 @@ def debug_users():
     return jsonify(users)
 
 
+
 ### 📢 News API Root Endpoint
 @app.route('/')
 def get_news():
@@ -125,7 +136,7 @@ dynamodb = boto3.resource(
     region_name=os.getenv("AWS_REGION")
 )
 
-table = dynamodb.Table('NewsArticles')
+news = dynamodb.Table('NewsArticles')
 ### 📌 Get News by Category
 @app.route('/category/<category_name>')
 def category(category_name):
@@ -142,13 +153,13 @@ def category(category_name):
             'FilterExpression': Attr('category').eq(formatted_category)
         }
 
-        response = table.scan(**scan_kwargs)
+        response = news.scan(**scan_kwargs)
         items.extend(response.get('Items', []))
 
         # 如果数据量超 1MB，继续获取
         while 'LastEvaluatedKey' in response:
             scan_kwargs['ExclusiveStartKey'] = response['LastEvaluatedKey']
-            response = table.scan(**scan_kwargs)
+            response = news.scan(**scan_kwargs)
             items.extend(response.get('Items', []))
 
         print(f"🔥 查询 `{formatted_category}` -> 找到 {len(items)} 篇新闻")
@@ -164,7 +175,7 @@ def category(category_name):
 def debug_categories():
     """列出所有数据库里的 category"""
     try:
-        response = table.scan()
+        response = news.scan()
         items = response.get('Items', [])
 
         # 获取所有唯一的分类名称
@@ -184,7 +195,7 @@ def debug_all_news():
 
         # ✅ 使用 `pagination`，完整扫描数据库，避免 1MB 限制
         while True:
-            response = table.scan(**scan_kwargs)
+            response = news.scan(**scan_kwargs)
             items.extend(response.get('Items', []))
 
             if 'LastEvaluatedKey' not in response:
@@ -224,34 +235,119 @@ def search():
     search_results = [news for news in news_data if query in news['title'].lower()]
     return jsonify({"query": query, "results": search_results})
 
-likes = {}
-@app.route('/like/<path:article_url>', methods=['POST', 'OPTIONS'])
+@app.route('/like/<path:article_url>', methods=['POST'])
 def like_article(article_url):
-    global likes  # 确保访问全局变量
+    try:
+        data = request.json
+        email = data.get("email")  # 获取用户 email
+        like = data.get("like", False)  # 获取点赞状态
 
-    if request.method == 'OPTIONS':
-        return '', 204  # 处理 CORS 预检请求
+        if not email:
+            return jsonify({"error": "Missing email"}), 400
 
-    data = request.json
-    like = data.get("like", False)
+        # ✅ 获取用户数据
+        user = db.get_user_by_email(email)
+        print(f"🔍 like_article: email={email}, user={user}")  # ✅ 调试信息
 
-    # 初始化点赞数
-    if article_url not in likes:
-        likes[article_url] = 0
+        if not user or not isinstance(user, dict):  # 确保 `user` 是 `dict`
+            print(f"❌ 用户数据错误: {user}, 类型: {type(user)}")  # ✅ 打印 `user` 的类型
+            return jsonify({"error": "User not found"}), 404
 
-    # 处理点赞或取消点赞
-    if like:
-        likes[article_url] += 1
+        # ✅ 修正 `preferences`，确保它是 `dict`
+        if not isinstance(user.get("preferences"), list):
+            print(f"⚠️ `preferences` 不是 `list`，将其转换为 `list`")
+            user["preferences"] = user.get("preferences", [])
+
+        # ✅ 更新 liked_articles
+        liked_articles = set(user["preferences"])
+        if like:
+            liked_articles.add(article_url)
+        else:
+            liked_articles.discard(article_url)
+        user["preferences"] = list(liked_articles)  # ✅ 确保是 `list`
+
+        # ✅ 使用 `put_item()` 替换整个 `user` 记录
+        db.table.put_item(Item=user)
+
+        return jsonify({"message": "User like updated", "liked_articles": list(liked_articles)}), 200
+
+    except Exception as e:
+        print(f"❌ Error updating like: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+# producer = KafkaProducer(
+#     bootstrap_servers=['localhost:9092'],
+#     value_serializer=lambda v: json.dumps(v).encode('utf-8')  # 将消息序列化为 JSON 格式
+# )
+
+# @app.route('/produce', methods=['POST'])
+# def produce_message():
+#     data = request.json
+#     print(f"Producing message: {data}")  # 打印接收到的数据
+#
+#     try:
+#         # 发送消息到 Kafka
+#         future = producer.send('user-behavior', data)
+#         result = future.get(timeout=60)  # 等待消息发送的确认结果
+#         print(f"Message sent to Kafka: {result}")
+#         producer.flush()
+#         return jsonify({"message": "Message successfully produced to Kafka"}), 200
+#     except Exception as e:
+#         print(f"Failed to send message to Kafka: {e}")
+#         return jsonify({"message": "Error sending message to Kafka"}), 500
+kafka_config = {
+    'bootstrap.servers': 'localhost:9092',  # Kafka 地址
+    'client.id': 'python-flask-client'
+}
+# 创建 Kafka 生产者
+producer = Producer(kafka_config)
+
+# Kafka 消息发送函数
+def send_to_kafka(topic, message):
+    try:
+        producer.produce(topic, key=str(message['userId']), value=json.dumps(message))
+        producer.flush()
+        print(f"Message sent to Kafka topic {topic}")
+    except Exception as e:
+        print(f"Failed to send message to Kafka: {e}")
+
+@app.route('/api/user-behavior', methods=['POST'])
+def send_to_kafka_endpoint():
+    data = request.get_json()
+
+    user_id = data.get('user_id')
+    email = data.get('email')
+    action = data.get('action')
+    article_url = data.get('article_url')
+    timestamp = data.get('timestamp')
+    duration = data.get('duration')
+
+    # 根据 action 选择 Kafka Topic
+    if action == 'LIKE':
+        topic = 'user-like-actions'
+    elif action == 'VIEW':
+        topic = 'user-view-actions'
+    elif action == 'SHARE':
+        topic = 'user-share-actions'
+    elif action == 'READ':
+        topic = 'user-reading-actions'  # 阅读行为
     else:
-        likes[article_url] = max(0, likes[article_url] - 1)
+        topic = 'user-other-actions'  # 其他行为
 
-    return jsonify({"count": likes[article_url]})
+    # 构建消息
+    message = {
+        'userId': user_id,
+        'email': email,
+        'action': action,
+        'articleUrl': article_url,
+        'timestamp': timestamp,
+        'duration': duration,
+    }
 
-@app.route('/likes', methods=['GET'])
-def get_likes():
-    global likes  # 确保访问全局变量
-    return jsonify(likes)
+    # 发送消息到 Kafka
+    send_to_kafka(topic, message)
 
+    return jsonify({'message': 'Data sent to Kafka successfully'})
 
 
 

@@ -3,12 +3,12 @@ import {AuthContext} from "../context/AuthContext";
 
 const HomePage = () => {
     const auth = useContext(AuthContext);
-    const [formData, setFormData] = useState({email: "", password: ""});
+    const [formData, setFormData] = useState({ email: "", password: "" });
     const [loadingRegister, setLoadingRegister] = useState(false);
     const [loadingLogin, setLoadingLogin] = useState(false);
     const [error, setError] = useState("");
 
-    // Display loading state if authentication context is not ready
+    // 如果认证上下文还没有准备好，显示加载提示
     if (!auth) {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -17,13 +17,13 @@ const HomePage = () => {
         );
     }
 
-    const {user, register, login, logout} = auth;
+    const { user, register, login, logout } = auth;
 
     const handleChange = (e) => {
-        setFormData((prev) => ({...prev, [e.target.name]: e.target.value}));
+        setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    // Handle user registration
+    // 处理用户注册
     const handleRegister = async (e) => {
         e.preventDefault();
         setLoadingRegister(true);
@@ -45,7 +45,7 @@ const HomePage = () => {
         setLoadingRegister(false);
     };
 
-    // Handle user login
+    // 处理用户登录
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoadingLogin(true);

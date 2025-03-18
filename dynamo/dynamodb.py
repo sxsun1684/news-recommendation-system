@@ -2,6 +2,7 @@ import boto3
 import uuid
 import bcrypt
 from botocore.exceptions import ClientError
+from boto3.dynamodb.conditions import Key
 
 
 class DynamoDB:
@@ -67,18 +68,39 @@ class DynamoDB:
             print(f"❌ Failed to retrieve user: {e}")
             return None
 
+    def update_user_preferences(self, email, preferences):
+        """更新用户 preferences"""
+        try:
+            self.table.update_item(
+                Key={"email": email},
+                UpdateExpression="SET preferences = :prefs",
+                ExpressionAttributeValues={':prefs': preferences}
+            )
+            return True
+        except ClientError as e:
+            print(f"❌ 更新 preferences 失败: {e}")
+            return False
+
+    from boto3.dynamodb.conditions import Key
+
     def get_user_by_email(self, email):
-        """Retrieve user using email, assuming a Global Secondary Index (GSI) exists"""
+        """根据 email 查询用户"""
         try:
             response = self.table.query(
-                IndexName="email-index",
-                KeyConditionExpression="email = :email",
-                ExpressionAttributeValues={":email": email}
+                IndexName="email-index",  # ✅ 确保你有 email 作为 GSI
+                KeyConditionExpression=Key("email").eq(email)
             )
             items = response.get("Items", [])
-            return items[0] if items else None
+
+            print(f"🔍 查询 email: {email} -> 结果: {items}")  # ✅ 打印返回的用户数据
+
+            if not items:
+                print(f"❌ 没有找到用户: {email}")
+                return None
+
+            return items[0]  # ✅ 只返回第一个匹配项，而不是 `list`
         except ClientError as e:
-            print(f"❌ Failed to retrieve user by email: {e}")
+            print(f"❌ 查询用户失败: {e}")
             return None
 
     def authenticate_user(self, email, password):
@@ -102,14 +124,23 @@ class DynamoDB:
             print("❌ Incorrect password")
             return False
 
-
-# # Test code
+#
+# # # Test code
 # db = DynamoDB("Users", "us-west-1")
 # #
 # # # Create a user with encrypted password
-# user_id = db.create_user("cc@neu.edu", "mypassword123", ["Tech", "Finance"])
+# user_id = db.create_user("alice@neu.edu", "123", {
+#     "viewed_articles": ["https://bbc.com/news1", "https://bbc.com/news2"],
+#     "liked_articles": ["https://bbc.com/news1"],
+#     "categories": {
+#         "Technology": 5,
+#         "Health": 3,
+#         "Politics": 1
+#     },
+#     "average_read_time": 120
+# })
 #
 # # Test user login (password verification)
-# db.authenticate_user("cc@neu.edu", "mypassword123")  # ✅ Correct password
-# db.authenticate_user("cc@neu.edu", "wrongpassword")  # ❌ Incorrect password
-# u = db.create_user("cc1@neu.edu", "mypassword123", ["Tech", "Finance"])
+# db.authenticate_user("alice@neu.edu", "123")  # ✅ Correct password
+# db.authenticate_user("alice@neu.edu", "wrongpassword")  # ❌ Incorrect password
+# # u = db.create_user("alice1@neu.edu", "mypassword123", ["Tech", "Finance"])

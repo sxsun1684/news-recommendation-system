@@ -52,6 +52,7 @@ export const AuthProvider = ({children}) => {
         } catch (error) {
             console.error("Login failed", error);
             alert("Login failed, please check your email and password");
+
         }
     };
 
