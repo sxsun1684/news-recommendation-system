@@ -81,4 +81,31 @@ Ensure you have the following installed:
 ## Future Improvements
 - Add real-time recommendation updates.
 - Expand dataset to more news sources.
-- Improve recommendation model with NLP techniques.
+- Improve recommendation model with NLP/ML techniques.
+
+# Node2Vec Combined with PageRank for Weight Adjustment 
+
+## Method
+1. **Compute News Content Similarity**:
+   - Use **TF-IDF** to extract text features from news articles.
+   - Calculate **cosine similarity** to measure the semantic closeness between articles.
+
+2. **Construct a News-Graph (News-to-News Network)**:
+   - Represent news articles as **nodes** in the graph.
+   - Establish **edges** between similar articles, with weights based on their TF-IDF similarity score.
+
+3. **Apply PageRank to Compute News Importance**:
+   - Run the **PageRank algorithm** to determine the relative importance of each news article.
+   - Higher PageRank scores indicate more significant articles, which should be prioritized in recommendations.
+
+4. **Incorporate Node2Vec for Learning News Embeddings (Optional)**:
+   - Use **Node2Vec to generate vector representations (embeddings) of news articles**, capturing deeper structural relationships.
+   - Employ **KNN or MLP models** to refine recommendations based on learned embeddings.
+
+---
+
+## Use Cases
+**Content-Based Recommendation**: Enhances recommendations by leveraging both **news content and structure**, rather than solely relying on user interaction data.  
+**Cold Start Problem**: Helps recommend relevant news articles even for new users with limited interaction history.  
+**Graph-Based AI Optimization**: Provides a structured way to rank and recommend news using **graph-based learning techniques**.
+
