@@ -104,7 +104,7 @@ Ensure you have the following installed:
 
 ---
 
-###Use Cases
+### Use Cases
 **Content-Based Recommendation**: Enhances recommendations by leveraging both **news content and structure**, rather than solely relying on user interaction data.  
 **Cold Start Problem**: Helps recommend relevant news articles even for new users with limited interaction history.  
 **Graph-Based AI Optimization**: Provides a structured way to rank and recommend news using **graph-based learning techniques**.
