@@ -83,9 +83,9 @@ Ensure you have the following installed:
 - Expand dataset to more news sources.
 - Improve recommendation model with NLP/ML techniques.
 
-# Node2Vec Combined with PageRank for Weight Adjustment 
+### Node2Vec Combined with PageRank for Weight Adjustment 
 
-## Method
+### Method
 1. **Compute News Content Similarity**:
    - Use **TF-IDF** to extract text features from news articles.
    - Calculate **cosine similarity** to measure the semantic closeness between articles.
@@ -104,7 +104,7 @@ Ensure you have the following installed:
 
 ---
 
-## Use Cases
+###Use Cases
 **Content-Based Recommendation**: Enhances recommendations by leveraging both **news content and structure**, rather than solely relying on user interaction data.  
 **Cold Start Problem**: Helps recommend relevant news articles even for new users with limited interaction history.  
 **Graph-Based AI Optimization**: Provides a structured way to rank and recommend news using **graph-based learning techniques**.
