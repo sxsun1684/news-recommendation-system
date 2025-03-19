@@ -5,6 +5,15 @@ const LikeButton = ({ articleUrl, likedArticles, onLike }) => {
     const liked = likedArticles[articleUrl];
     const [isLoading, setIsLoading] = useState(false);  // 用来跟踪请求状态
 
+    // 获取当前日期，格式化为 mm/dd/yyyy
+    const getFormattedDate = () => {
+        const date = new Date();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');  // 获取月份，确保两位数
+        const day = date.getDate().toString().padStart(2, '0');  // 获取日期，确保两位数
+        const year = date.getFullYear();  // 获取年份
+        return `${month}/${day}/${year}`;
+    };
+
     const handleLike = async (e) => {
         e.stopPropagation(); // 防止触发其他事件（如打开模态框）
 
@@ -21,6 +30,7 @@ const LikeButton = ({ articleUrl, likedArticles, onLike }) => {
                 email: email,
                 articleUrl: articleUrl,
                 action: 'LIKE', // 操作类型（点赞）
+                timestamp: getFormattedDate(),  // 添加点赞日期
             };
 
             try {
