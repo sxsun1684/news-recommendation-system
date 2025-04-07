@@ -1,4 +1,27 @@
 # News Recommendation System
+## Background
+
+With the rapid development of digital media and increasing demand for efficient information acquisition, personalized news recommendation systems have emerged as a key solution to the problem of information overload. Traditional news curation methods, such as editor-based selection or rule-based filtering, struggle to keep pace with the volume and diversity of today's news content. As a result, building intelligent recommendation systems that can dynamically model user preferences and deliver timely, relevant news has become a significant research and engineering challenge.
+
+Compared to general recommendation systems, news recommendation poses several unique challenges:  
+1. News items have extremely short lifespans, requiring real-time relevance;  
+2. User feedback is often implicit (e.g., clicks), which is sparse and noisy;  
+3. User interests are complex, diverse, and evolve rapidly;  
+4. News content is typically high-dimensional text, requiring sophisticated semantic modeling.
+
+In this context, Wu et al. (2021) proposed a comprehensive research framework in their survey *"Personalized News Recommendation: Methods and Challenges"*. Rather than categorizing by traditional recommendation methods (e.g., collaborative filtering, content-based), they structured the field around six core research problems:  
+- **News Modeling**: Learning semantic representations of news from text, images, and metadata;  
+- **User Modeling**: Capturing dynamic, multi-interest profiles from behavior data;  
+- **Personalized Ranking**: Accurately ranking candidate news items based on user interest;  
+- **Model Training**: Utilizing supervised, weakly supervised, or multi-task learning techniques;  
+- **Evaluation & Datasets**: Designing meaningful metrics and using real-world datasets (e.g., MIND, Adressa);  
+- **Responsible Recommendation**: Addressing fairness, diversity, and privacy concerns in system design.
+
+This project is inspired by the aforementioned framework and aims to build a real-world personalized news recommendation system. Leveraging deep learning and natural language processing techniques, the system covers the entire pipeline — from content understanding and user modeling to recommendation and evaluation. The architecture is built using a Flask-based backend and React-based frontend, integrated with Kafka as a message queue for scalability and DynamoDB for efficient data storage and retrieval.
+
+Our goal is not only to optimize recommendation accuracy but also to tackle broader challenges such as cold start, user interest shift, and responsible recommendation. This project serves as a practical implementation that bridges cutting-edge research insights with production-ready system design.
+
+
 ## Overview
 This project is a **news recommendation system** that provides personalized news recommendations to users. It utilizes **Flask** as the backend, **React** as the frontend, **DynamoDB** for data storage, and **Kafka** for message queuing. Machine learning algorithms are employed to enhance recommendation quality.
 ![system design](display/general.png)
@@ -109,3 +132,8 @@ Ensure you have the following installed:
 **Cold Start Problem**: Helps recommend relevant news articles even for new users with limited interaction history.  
 **Graph-Based AI Optimization**: Provides a structured way to rank and recommend news using **graph-based learning techniques**.
 
+---
+
+### Reference
+
+Wu, C., Wu, F., Ge, S., Qi, T., Huang, Y., & Xie, X. (2021). *Personalized News Recommendation: Methods and Challenges*. ACM Transactions on Information Systems (TOIS), 39(2), 1–42. https://doi.org/10.1145/3447553
